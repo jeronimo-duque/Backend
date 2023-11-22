@@ -34,11 +34,20 @@ const uploadFileToFirebase = (req, res, next) => {
   });
 
   blobWriter.on("finish", () => {
-    const publicUrl = format(
-      `https://storage.googleapis.com/${bucket.name}/${blob.name}`
-    );
-    req.file.firebaseUrl = publicUrl;
-    next();
+    // Ajustar esta parte para obtener una URL firmada
+    blob
+      .getSignedUrl({
+        action: "read",
+        expires: "03-09-2491", // Puedes definir una fecha de expiración adecuada
+      })
+      .then((signedUrls) => {
+        // signedUrls[0] contiene la URL firmada
+        req.file.firebaseUrl = signedUrls[0];
+        next();
+      })
+      .catch((err) => {
+        next(err);
+      });
   });
 
   blobWriter.end(req.file.buffer);
