@@ -1,11 +1,15 @@
 const Chat = require("../Models/Chat");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
-// Obtener todos los chats
+// Obtener todos los chats en los que un usuario es participante
 const getChats = async (req, res) => {
   try {
-    const chats = await Chat.find().populate(
-      "participantes mensajes.enviadoPor"
-    );
+    const userId = new ObjectId(req.params.userId);
+    const chats = await Chat.find({
+      participantes: userId,
+    }).populate("participantes");
+
     res.json(chats);
   } catch (err) {
     res.status(400).json("Error: " + err);
@@ -15,9 +19,12 @@ const getChats = async (req, res) => {
 // Obtener un chat por ID
 const getChatById = async (req, res) => {
   try {
-    const chat = await Chat.findById(req.params.id).populate(
-      "participantes mensajes.enviadoPor"
-    );
+    const chat = await Chat.findById(req.params.id)
+      .populate("participantes")
+      .populate({
+        path: "mensajes.enviadoPor",
+        select: "Nombre",
+      });
     if (!chat) {
       return res.status(404).json("Chat no encontrado");
     }
@@ -30,10 +37,17 @@ const getChatById = async (req, res) => {
 // Crear un nuevo chat
 const createChat = async (req, res) => {
   try {
+    const nuevoMensaje = {
+      texto: req.body.texto,
+      enviadoPor: req.body.enviadoPor,
+    };
     const nuevoChat = new Chat({
       participantes: req.body.participantes,
-      mensajes: [], // Comienza con un array de mensajes vacío
+      mensajes: [],
     });
+
+    nuevoChat.mensajes.push(nuevoMensaje);
+
     await nuevoChat.save();
     res.json("Chat creado con éxito!");
   } catch (err) {

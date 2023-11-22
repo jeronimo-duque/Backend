@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
-const upload = multer({ storage: multer.memoryStorage() });
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const config = require("../Config/config");
@@ -15,9 +14,7 @@ class Server {
     this.paths = {
       auth: "/api/auth",
       publicaciones: "/api/publicaciones",
-      comentarios: "/api/comentarios",
       chats: "/api/chats",
-      mensajes: "/api/mensajes",
       usuario: "/api/usuarios",
     };
 
@@ -43,11 +40,16 @@ class Server {
     this.app.use(cors());
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
-    this.app.use(express.static("public"));
+    this.app.use(express.static("files"));
   }
 
   setRoutes() {
     this.app.use(this.paths.usuario, require("../Routes/RouterUsuario"));
+    this.app.use(
+      this.paths.publicaciones,
+      require("../Routes/RouterPublicaciones")
+    );
+    this.app.use(this.paths.chats, require("../Routes/RouterChats"));
     /* Aquí asumo que tienes los archivos de ruta adecuados en '../Routes'
     
     this.app.use(this.paths.auth, require("../Routes/auth"));

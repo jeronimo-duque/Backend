@@ -1,4 +1,5 @@
 const User = require("../Models/User");
+const generarJWT = require("../Helpers/jwt");
 
 const getUser = (req, res) => {
   User.find()
@@ -12,23 +13,71 @@ const getUserById = (req, res) => {
     .catch((err) => res.status(400).json("Error: " + err));
 };
 
-const createUser = (req, res) => {
-  const ProfilePhoto = req.file.path;
-  const Nombre = req.body.Nombre;
-  const Descripcion = req.body.Descripcion;
-  const Habilidades = req.body.Habilidades;
+const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ Email: email });
 
-  const newUser = new User({
-    ProfilePhoto,
-    Nombre,
-    Descripcion,
-    Habilidades,
-  });
+    if (!user) {
+      return res.status(400).json("Usuario no encontrado");
+    }
 
-  newUser
-    .save()
-    .then(() => res.json("User added!"))
-    .catch((err) => res.status(400).json("Error: " + err));
+    // Validar la contraseña
+    if (!user.validatePassword(password)) {
+      return res.status(400).json("Contraseña incorrecta");
+    }
+
+    // Generar JWT
+    const token = await generarJWT(user.id, user.email);
+
+    res.json({
+      uid: user.id,
+      name: user.email,
+      token,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error en el servidor", error: err });
+  }
+};
+
+// Registrar usuario
+const registerUser = async (req, res) => {
+  try {
+    const { email, password, Nombre, Descripcion, Habilidades } = req.body;
+    const existingUser = await User.findOne({
+      Email: email.toLowerCase().trim(),
+    });
+    if (existingUser) {
+      // Manejar el caso en que el usuario ya existe, por ejemplo:
+      return res
+        .status(409)
+        .json({ message: "El correo electrónico ya está registrado." });
+    }
+    const user = new User({
+      ProfilePhoto: req.file.path,
+      Email: email,
+      Nombre,
+      Descripcion,
+      Habilidades,
+    });
+    // Configurar la contraseña
+    user.setPassword(password);
+
+    await user.save();
+
+    // Generar JWT
+    const token = await generarJWT(user.id, user.email);
+
+    res.status(201).json({
+      uid: user.id,
+      name: user.email,
+      token,
+    });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error al registrar el usuario", error: err });
+  }
 };
 
 const deleteUser = (req, res) => {
@@ -44,7 +93,6 @@ const updateUser = (req, res) => {
       user.Nombre = req.body.Nombre;
       user.Descripcion = req.body.Descripcion;
       user.Habilidades = req.body.Habilidades;
-
       user
         .save()
         .then(() => res.json("User updated!"))
@@ -56,7 +104,8 @@ const updateUser = (req, res) => {
 module.exports = {
   getUser,
   getUserById,
-  createUser,
+  loginUser,
+  registerUser,
   deleteUser,
   updateUser,
 };

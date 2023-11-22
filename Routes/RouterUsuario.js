@@ -6,14 +6,16 @@ const Upload = require("../Config/multer");
 const {
   getUser,
   getUserById,
-  createUser,
+  loginUser,
+  registerUser,
   deleteUser,
   updateUser,
 } = require("../Controllers/ControllerUsuario");
 
 router.get("/", getUser);
 router.get("/:id", getUserById);
-router.post("/", Upload.single("ProfilePhoto"), createUser);
+router.post("/login", loginUser);
+router.post("/register", Upload.single("ProfilePhoto"), registerUser);
 router.delete("/id", deleteUser);
 router.put("/:id", Upload.single("ProfilePhoto"), updateUser);
 
