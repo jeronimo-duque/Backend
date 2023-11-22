@@ -3,17 +3,26 @@ const Publicacion = require("../Models/Publicacion");
 // Obtener todas las publicaciones
 const getPublicaciones = async (req, res) => {
   try {
-    const publicaciones = await Publicacion.find().populate("IDUsuario");
+    const publicaciones = await Publicacion.find()
+      .populate("IDUsuario")
+      .populate({
+        path: "Comentarios.IDUsuario", // Especifica el path en el array de subdocumentos
+        model: "User", // Especifica el modelo que quieres poblar
+      });
     res.json(publicaciones);
   } catch (err) {
     res.status(400).json("Error: " + err);
   }
 };
 
-// Obtener una publicación por ID
 const getPublicacionById = async (req, res) => {
   try {
-    const publicacion = await Publicacion.findById(req.params.id);
+    const publicacion = await Publicacion.findById(req.params.id)
+      .populate("IDUsuario")
+      .populate({
+        path: "Comentarios.IDUsuario",
+        model: "User",
+      });
     if (!publicacion) res.status(404).json("Publicación no encontrada");
     res.json(publicacion);
   } catch (err) {
@@ -25,7 +34,12 @@ const getPublicacionesByUserId = async (req, res) => {
   try {
     const publicaciones = await Publicacion.find({
       IDUsuario: req.params.userID,
-    }).populate("IDUsuario");
+    })
+      .populate("IDUsuario")
+      .populate({
+        path: "Comentarios.IDUsuario",
+        model: "User",
+      });
     res.json(publicaciones);
   } catch (err) {
     res.status(400).json("Error: " + err);
