@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const Upload = require("../Config/multer");
+const { uploadHandler, uploadFileToFirebase } = require("../Config/multer");
 
 const {
   getUser,
@@ -15,8 +15,8 @@ const {
 router.get("/", getUser);
 router.get("/:id", getUserById);
 router.post("/login", loginUser);
-router.post("/register", Upload.single("ProfilePhoto"), registerUser);
+router.post("/register", uploadHandler, uploadFileToFirebase, registerUser);
 router.delete("/id", deleteUser);
-router.put("/:id", Upload.single("ProfilePhoto"), updateUser);
+router.put("/:id", uploadHandler, uploadFileToFirebase, updateUser);
 
 module.exports = router;

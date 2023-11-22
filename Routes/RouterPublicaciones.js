@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Upload = require("../Config/multer");
+const { uploadHandler, uploadFileToFirebase } = require("../Config/multer");
 const {
   getPublicaciones,
   getPublicacionById,
@@ -13,7 +13,7 @@ const {
 router.get("/", getPublicaciones);
 router.get("/:id", getPublicacionById);
 router.get("/user/:userID", getPublicacionesByUserId);
-router.post("/", Upload.single("Image"), createPublicacion);
+router.post("/", uploadHandler, uploadFileToFirebase, createPublicacion);
 router.put("/:id", updateComentarios);
 router.delete("/:id", deletePublicacion);
 

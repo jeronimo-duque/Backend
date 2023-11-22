@@ -54,7 +54,7 @@ const registerUser = async (req, res) => {
         .json({ message: "El correo electrónico ya está registrado." });
     }
     const user = new User({
-      ProfilePhoto: req.file.path,
+      ProfilePhoto: req.file.firebaseUrl,
       Email: email,
       Nombre,
       Descripcion,
@@ -89,7 +89,7 @@ const deleteUser = (req, res) => {
 const updateUser = (req, res) => {
   User.findById(req.params.id)
     .then((user) => {
-      user.ProfilePhoto = req.file.path;
+      user.ProfilePhoto = req.file.firebaseUrl;
       user.Nombre = req.body.Nombre;
       user.Descripcion = req.body.Descripcion;
       user.Habilidades = req.body.Habilidades;

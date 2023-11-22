@@ -38,7 +38,7 @@ const createPublicacion = async (req, res) => {
     const { IDUsuario, comentarios } = req.body;
     const nuevaPublicacion = new Publicacion({
       IDUsuario,
-      Image: req.file.path,
+      Image: req.file.firebaseUrl,
       Comentarios: comentarios,
     });
     await nuevaPublicacion.save();
